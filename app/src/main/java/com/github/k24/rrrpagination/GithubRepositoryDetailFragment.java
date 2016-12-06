@@ -9,7 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.github.k24.rrrpagination.dummy.DummyContent;
+import com.github.k24.rrrpagination.presentation.DummyContent;
 
 /**
  * A fragment representing a single GithubRepository detail screen.

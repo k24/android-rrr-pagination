@@ -4,20 +4,25 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
-
-import com.github.k24.rrrpagination.dummy.DummyContent;
+import com.github.k24.rrrpagination.presentation.DummyContent;
+import com.github.k24.rrrpagination.presentation.GithubRepositoryPresentation;
+import com.github.k24.rrrpagination.usecase.GithubRepositoryUseCase;
 
 import java.util.List;
+
+import rx.Subscription;
 
 /**
  * An activity representing a list of GithubRepositories. This activity
@@ -27,13 +32,16 @@ import java.util.List;
  * item details. On tablets, the activity presents the list of items and
  * item details side-by-side using two vertical panes.
  */
-public class GithubRepositoryListActivity extends AppCompatActivity {
+public class GithubRepositoryListActivity extends AppCompatActivity implements GithubRepositoryPresentation {
 
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
      * device.
      */
     private boolean mTwoPane;
+
+    private GithubRepositoryUseCase githubRepositoryUseCase;
+    private Subscription subscription;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,10 +72,61 @@ public class GithubRepositoryListActivity extends AppCompatActivity {
             // activity should be in two-pane mode.
             mTwoPane = true;
         }
+
+        githubRepositoryUseCase = new GithubRepositoryUseCase().bind(this);
+        subscription = githubRepositoryUseCase.loadRepositories();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        subscription.unsubscribe();
     }
 
     private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
+        final int limit = 20;
         recyclerView.setAdapter(new SimpleItemRecyclerViewAdapter(DummyContent.ITEMS));
+        recyclerView.clearOnScrollListeners();
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                int position = getLastVisibleItemPosition(recyclerView);
+                int updatePosition = recyclerView.getAdapter().getItemCount() - 1 - (limit / 2);
+                if (position >= updatePosition) {
+                    githubRepositoryUseCase.nextPage();
+                }
+            }
+        });
+    }
+
+    private static int getLastVisibleItemPosition(RecyclerView recyclerView) {
+        LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
+        return layoutManager.findLastVisibleItemPosition();
+    }
+
+    @Override
+    public void refreshViews(List<DummyContent.DummyItem> items) {
+        DummyContent.clear();
+        DummyContent.addItems(items);
+        setupRecyclerView((RecyclerView) findViewById(R.id.githubrepository_list));
+    }
+
+    @Override
+    public void showEmptyView() {
+        Toast.makeText(this, "No Content", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void addItems(List<DummyContent.DummyItem> items) {
+        int size = DummyContent.ITEMS.size();
+        DummyContent.addItems(items);
+        RecyclerView recyclerView = (RecyclerView) findViewById(R.id.githubrepository_list);
+        recyclerView.getAdapter().notifyItemRangeInserted(size, items.size());
+    }
+
+    @Override
+    public boolean isViewAvailable() {
+        return !isFinishing() && !isDestroyed();
     }
 
     public class SimpleItemRecyclerViewAdapter

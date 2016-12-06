@@ -1,4 +1,4 @@
-package com.github.k24.rrrpagination.dummy;
+package com.github.k24.rrrpagination.presentation;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,13 +23,15 @@ public class DummyContent {
      */
     public static final Map<String, DummyItem> ITEM_MAP = new HashMap<String, DummyItem>();
 
-    private static final int COUNT = 25;
-
-    static {
-        // Add some sample items.
-        for (int i = 1; i <= COUNT; i++) {
-            addItem(createDummyItem(i));
+    public static void addItems(List<DummyItem> items) {
+        for (DummyItem item : items) {
+            addItem(item);
         }
+    }
+
+    public static void clear() {
+        ITEMS.clear();
+        ITEM_MAP.clear();
     }
 
     private static void addItem(DummyItem item) {
