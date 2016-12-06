@@ -1,4 +1,5 @@
 apply plugin: 'com.android.application'
+apply plugin: 'realm-android'
 
 android {
     compileSdkVersion 25
@@ -29,4 +30,21 @@ dependencies {
     compile 'com.android.support:recyclerview-v7:25.0.1'
     compile 'com.android.support:design:25.0.1'
     testCompile 'junit:junit:4.12'
+
+    // Rx
+    compile 'io.reactivex:rxandroid:1.2.1'
+    compile 'io.reactivex:rxjava:1.1.6'
+    compile 'com.jakewharton.rxbinding:rxbinding:0.4.0'
+
+    // Retrofit
+    compile "com.squareup.retrofit2:retrofit:$retrofit_version"
+    compile "com.squareup.retrofit2:adapter-rxjava:$retrofit_version"
+    compile 'com.github.k24:retrofit-converter-jsonic:1.0.0'
+    compile 'com.squareup.okhttp3:logging-interceptor:3.5.0'
+
+    // Realm
+    annotationProcessor 'dk.ilios:realmfieldnameshelper:1.1.0'
+
+    // Util
+    compile 'com.jakewharton.timber:timber:4.1.2'
 }
